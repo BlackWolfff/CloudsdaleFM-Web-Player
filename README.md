@@ -19,6 +19,12 @@ You add them with passing object as 2nd argument to constructor
 new CloudsdalePlayer("someID", { contextMenu: false })
 ```
 ## Avaible options are:
++ `dataFetchFreq`: `Number` - Delay between song title and listeners amount updates, is seconds
+    - default: `15`
++ `volume`: `Number` - Default volume that player will start on in %
+    - default: `50`
++ `volumeStep`: `Number` - How much volume increase/decrease when scrolled over slider
+    - default: `5`
 + `style`: `String` - URL path to your own stylesheet that will be attached to head, pass `false` to disable that.
     - default: `./style.css`
 + `contextMenu`: `Boolean` - Enable/Disable menu that appears when right clicked on player.
