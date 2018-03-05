@@ -95,6 +95,7 @@ const audioPlayer = new (class {
         if(vol > 100) vol = 100
         this.lastVolume = norm(this.stream.volume, true)
         this.stream.volume = norm(vol)
+        return vol
     }
 
     get volume() {
@@ -238,6 +239,7 @@ class Slider extends Component {
             newVol = audioPlayer.volume + this.props.step
         else 
             newVol = audioPlayer.volume - this.props.step
+        console.log(newVol)
         this.setState(newVol)
     }
 
@@ -249,6 +251,7 @@ class Slider extends Component {
 
     setState(vol) {
         audioPlayer.volume = vol
+        if(vol < 0) vol = 0
         this.sliderInner.style.width = `${vol}%`
     }
 
@@ -297,43 +300,50 @@ class Player {
             ...options
         }
         
+        this.DOM = {}
 
         this.init()
     }
 
     init() {
-        if(this.options.autoRender) {
-            this.render(this.renderDom)
-            instances.push(this)
-        }
+        this.prepareDOM()
+
         if(this.options.style) 
             document.head.appendChild(createElement("link", { rel: "stylesheet", href: this.options.style }))
     }
 
-    render(target) {
+    prepareDOM() {
+        this.DOM.context = createElement(ContextMenu, null)
+        this.DOM.window = createElement(
+            "div", 
+            { className: "window"}, 
+            createElement(PlayButton, { imgUrl: this.options.images }),
+            createElement(
+                "div", 
+                { className: "rightContainer" },
+                createElement(NowPlaying, { refresh: this.options.dataFetchFreq*1000 }),
+                createElement(
+                    Slider, 
+                    { defaultVolume: this.options.volume, step: this.options.volumeStep }
+                )
+            )
+        )
+
+        if(this.options.autoRender) {
+            this.render(this.renderDom)
+            instances.push(this)
+        }
+    }
+
+    render(target = this.renderDom) {
         target.className = "CloudsdalePlayer"
         if(this.options.background)
             target.className += " withBg"
         
         if(this.options.contextMenu)
-            target.append(createElement(ContextMenu, null))
+            target.append(this.DOM.context)
         
-        target.append(
-            createElement(
-                "div", 
-                { className: "window"}, 
-                createElement(PlayButton, { imgUrl: this.options.images }),
-                createElement(
-                    "div", 
-                    { className: "rightContainer" },
-                    createElement(NowPlaying, { refresh: this.options.dataFetchFreq*1000 }),
-                    createElement(
-                        Slider, 
-                        { defaultVolume: this.options.volume, step: this.options.volumeStep }
-                    )
-                )
-            ).main // because it's .append()
-        )
+        target.append(this.DOM.window.main)
     }
 }
 
