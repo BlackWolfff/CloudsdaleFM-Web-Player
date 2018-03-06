@@ -6,7 +6,7 @@ It renders itself inside given html tag or tag with that id. I tried to imitate 
 Remember that player will still 'work' even if you don't render it! It will still download data in background etc.
 
 # Usage
-This player will be on cloudsdale serwer (when it will be done, duh) so you can just attach one js file from `probably https://cloudsdale.net/player.js ? idk` to your site and point it to div with
+This player will be on cloudsdale serwer (when it will be done, duh) so you can just attach one js file from `https://www.cloudsdalefm.net/player/main.js` to your site and point it to div with
 ```js
 new CloudsdalePlayer("Tag name or Div ID")
 ```
@@ -32,7 +32,7 @@ new CloudsdalePlayer("someID", { contextMenu: false })
 + `webTitle`: `Boolean` - When true player will change page title to `NowPlayingSong - CloudsdaleFM.net`
     - default: `false`
 + `style`: `String` - URL path to your own stylesheet that will be attached to head, pass `false` to disable that.
-    - default: `./style.css`
+    - default: `https://www.cloudsdalefm.net/player/style.css`
 + `contextMenu`: `Boolean` - Enable/Disable menu that appears when right clicked on player.
     - default: `true`
 + `background`: `Boolean` - If true div that player was attached to will automaticly get `withBG` class along with `CloudsdalePlayer`
@@ -43,7 +43,7 @@ new CloudsdalePlayer("someID", { contextMenu: false })
 # Example
 First, you need to add main js file to your site with
 ```html
-</script src="url later"></script>
+</script src="https://www.cloudsdalefm.net/player/main.js"></script>
 ```
 Just put it in somewhere in head
 
@@ -67,7 +67,7 @@ Best way to deal with this is to put that ^ in <body> tag after div or tag for t
 So whole player on page would look like this
 ```html
 <!-- Somewhere in head -->
-</script src="url later"></script>
+</script src="https://www.cloudsdalefm.net/player/main.js"></script>
 
 <!-- Now in body -->
 <div id="player"></div>

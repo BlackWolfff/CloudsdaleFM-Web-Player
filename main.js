@@ -156,17 +156,20 @@ class ContextMenu extends Component {
         if(this.open) return;
         this.main.style.display = "block";
 
-        const Xsum = evn.clientX + this.main.clientWidth
-        if(window.innerWidth < Xsum) 
-            this.main.style.left = window.innerWidth - this.main.clientWidth - 20+ "px"
-        else 
-            this.main.style.left = evn.clientX + "px"
+        const x = evn.x
+        const y = evn.y
 
-        const Ysum = evn.clientY + this.main.clientHeight
+        const Xsum = x + this.main.clientWidth
+        if(window.innerWidth < Xsum) 
+            this.main.style.left = window.innerWidth - this.main.clientWidth - 20 + "px"
+        else 
+            this.main.style.left = x + "px"
+
+        const Ysum = y + this.main.clientHeight
         if(window.innerHeight < Ysum)
-            this.main.style.top = window.innerHeight - this.main.clientHeight - 10+ "px"
+            this.main.style.top = window.innerHeight - this.main.clientHeight - 10 + "px"
         else
-            this.main.style.top = evn.clientY + "px"
+            this.main.style.top = y + "px"
         
         this.open = true
     }
@@ -196,9 +199,13 @@ class ContextMenu extends Component {
 
         const wrapper = createElement(
             "div", 
-            { className: "contextMenu" },
+            { className: "CloudsdalePlayerContextMenu" },
             createElement("ul", { className: "contentMenuList" }, options)
         )
+        wrapper.main.addEventListener("contextmenu", evn => {
+            evn.preventDefault() 
+            evn.stopPropagation()
+        })
 
         if(!this.props.active) return wrapper.main // don't add events
 
@@ -263,7 +270,8 @@ class PlayButton extends Component{
         this.button.className = `button ${state}`
     }
 
-    onClick() {
+    onClick(evn) {
+        if(evn.buttons !== 1) return;
         if(audioPlayer.loading || audioPlayer.error) return;
         if(audioPlayer.playing) {
             audioPlayer.pause()
@@ -346,10 +354,10 @@ class NowPlaying extends Component {
     }
 
     updateState() {
-        if(this.songTitleNode.innerHTML !== this.title) {
+        const marqueed = `<marquee>${this.title}</marquee>`
+        if(this.songTitleNode.innerHTML !== marqueed && this.songTitleNode.innerHTML !== this.title) {
             if(this.title.length > 40)
-                this.songTitleNode.innerHTML = `<marquee>${this.title}</marquee>`
-
+                this.songTitleNode.innerHTML = marqueed
             else
                 this.songTitleNode.innerHTML = this.title
             if(this.webTitle) 
@@ -420,11 +428,8 @@ class Slider extends Component {
         if(vol < 0) vol = 0
         if(vol > 100) vol = 100 //rly.. i do that in audio player already >.-.<
         this.sliderInner.style.width = `${vol}%`
-        if(this.props.changeColor) {
-            const color = `hsl(${(110 - vol) + 40}, 100%, 47%)`
-            this.sliderInner.style.background = color
-            this.sliderInner.style.boxShadow = `0px 0px 20px 1px ${color}` 
-        }
+        if(this.props.changeColor) 
+            this.sliderInner.style.background = `hsl(${(110 - vol) + 40}, 100%, 47%)`
     }
 
     render() { // also, render is called once xD So i can use it like componentWillMount in React
@@ -449,7 +454,7 @@ class Slider extends Component {
 
 const defaultOptions = {
     contextMenu: true,
-    style: "./style.css",
+    style: "https://www.cloudsdalefm.net/player/style.css",
     autoRender: true,
     background: true,
     dataFetchFreq: 15,
@@ -504,7 +509,7 @@ class Player {
             target.className += " withBg"
         
         if(this.options.contextMenu)
-            target.append(this.DOM.context.main)
+            document.body.prepend(this.DOM.context.main)
         
         target.append(this.DOM.window.main)
     }
