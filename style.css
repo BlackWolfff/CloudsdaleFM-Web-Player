@@ -58,6 +58,13 @@
     cursor: default;
     pointer-events: none;
 }
+.CloudsdalePlayer .nowPlayingContainer > div {
+    padding-left: 15px;
+}
+.CloudsdalePlayer .nowPlayingContainer > .nowPlaying {
+    padding-top: 1px;
+}
+
 
 .CloudsdalePlayer .sliderContainer {
     width: 100%;

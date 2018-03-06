@@ -21,12 +21,14 @@ You add them with passing object as 2nd argument to constructor
 new CloudsdalePlayer("someID", { contextMenu: false })
 ```
 ## Avaible options are:
-+ `dataFetchFreq`: `Number` - Delay between song title and listeners amount updates, is seconds
++ `dataFetchFreq`: `Number` - Delay between song title and listeners amount updates, in seconds
     - default: `15`
-+ `volume`: `Number` - Default volume that player will start on in %
++ `volume`: `Number` - Default volume that player will start with, in %
     - default: `50`
-+ `volumeStep`: `Number` - How much volume increase/decrease when scrolled over slider
++ `volumeStep`: `Number` - How much volume increase/decrease when scrolled over slider. If `false` scroll doesn't work at all
     - default: `5`
++ `changeColor`: `Boolean` - If true slider will change color from blue-green to yellow depending on volume (from 0 - blue, to 100 - yellow)
+    - default: `true`
 + `style`: `String` - URL path to your own stylesheet that will be attached to head, pass `false` to disable that.
     - default: `./style.css`
 + `contextMenu`: `Boolean` - Enable/Disable menu that appears when right clicked on player.
@@ -86,3 +88,11 @@ Buuut... let's say we don't want context menu, a (Mega)bit smaller data usage, p
 </script>
 ```
 Done!
+# Other
+Player is entirely coded by me, BlackBird you can find me on discord @ BlackBird#9999
+
+Also! If you know way to make HTML5 audio not start from where you paused it last time other than using `.load()` every time let me know please! This really annoys me because it's loading for few seconds...
+
+And I know my english isin't near perfect, if you spotted some typos or awful english let me know too! 
+
+Thanks <3
