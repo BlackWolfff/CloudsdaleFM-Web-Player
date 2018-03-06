@@ -1,6 +1,7 @@
 // Yes! I don't like to work in only 1 file too!
 /**
- * 
+ * Coded by BlackBird#9999 @ Discord
+ * https://github.com/BlackWolfff/CloudsdaleFM-Web-Player
  */
 
 (function() {
@@ -11,7 +12,7 @@ const STREAM_URL = "https://www.cloudsdalefm.net/stream";
 const _getMain = nodeType => {
     // I don't want to do .main everywhere and if is long to be sure it's not just component with all that props
     let keys = Object.keys(nodeType)
-    if(typeof nodeType === "object" && keys[0] === "main" && keys[2] === undefined && (keys[1] === "children" || keys[1] === "component")) {
+    if(typeof nodeType === "object" && keys[0] === "main" && keys[3] === undefined && (keys[1] === "children" || keys[1] === "component")) {
         return nodeType.main
     }
     return nodeType
@@ -22,11 +23,11 @@ const createElement = (nodeType, props, ...children) => {
     let node = null;
 
     if(typeof nodeType === "function") { // constructor function, aka component
-        const component = new nodeType(props)
+        const component = new nodeType({ props, children })
         const compRender = component.render()
         if(!compRender) throw new Error("Component must return node object from render!")
         node = _getMain(compRender)
-        return {main: node, component}
+        return { main: node, component }
         // i don't want childrens if i render component
     }
     if(typeof nodeType === "object") { // already created component
@@ -113,8 +114,10 @@ const audioPlayer = new (class {
 })()
 
 class Component { // ye.. i'm that lazy
-    constructor(props) {
+    constructor({ props, children }) {
         this.props = props
+        if(children.length > 0)
+            this.children = children
     }
 }
 
@@ -126,7 +129,7 @@ class ContextMenu extends Component {
         this.options = [
             {
                 title: "Popup player",
-                action: () => window.open("https://cloudsdalefm.net/player.html", "CloudsdaleFM Player", `left=${window.outerWidth/2-200},top=50,innerWidth=400px,innerHeight=100px,resizable=false`)
+                action: () => window.open("https://cloudsdalefm.net/player/", "CloudsdaleFM Player", `left=${window.outerWidth/2-200},top=50,innerWidth=420px,innerHeight=100px,resizable=false`)
             },
             {
                 className: "separator"
@@ -152,8 +155,19 @@ class ContextMenu extends Component {
     show(evn) {
         if(this.open) return;
         this.main.style.display = "block";
-        this.main.style.left = evn.clientX + "px"
-        this.main.style.top = evn.clientY + "px"
+
+        const Xsum = evn.clientX + this.main.clientWidth
+        if(window.innerWidth < Xsum) 
+            this.main.style.left = window.innerWidth - this.main.clientWidth - 20+ "px"
+        else 
+            this.main.style.left = evn.clientX + "px"
+
+        const Ysum = evn.clientY + this.main.clientHeight
+        if(window.innerHeight < Ysum)
+            this.main.style.top = window.innerHeight - this.main.clientHeight - 10+ "px"
+        else
+            this.main.style.top = evn.clientY + "px"
+        
         this.open = true
     }
 
@@ -179,11 +193,15 @@ class ContextMenu extends Component {
                 node.main.addEventListener("mousedown", middle(element.action.bind(element)))
             options.push(node)
         }
+
         const wrapper = createElement(
             "div", 
             { className: "contextMenu" },
             createElement("ul", { className: "contentMenuList" }, options)
         )
+
+        if(!this.props.active) return wrapper.main // don't add events
+
         this.props.target.addEventListener("contextmenu", this.onContextmenu.bind(this))
         window.addEventListener("mousedown", evn => {
             const keyCode = event.which || event.keyCode;
@@ -215,14 +233,14 @@ class App extends Component {
     }
 
     render() {
-        const app = createElement(
+        this.app = createElement(
             "div", 
             { className: "window"}, 
             createElement(PlayButton, { onClick: this.onButtonClick.bind(this) }),
             createElement(
                 "div", 
                 { className: "rightContainer" },
-                createElement(NowPlaying, { refresh: this.props.options.dataFetchFreq*1000 }),
+                createElement(NowPlaying, { refresh: this.props.options.dataFetchFreq*1000, webTitle: this.props.options.webTitle }),
                 createElement(
                     Slider, 
                     { 
@@ -235,8 +253,8 @@ class App extends Component {
             )
         )
 
-        this.nowPlaying = app.children[1].children[0].component
-        return app
+        this.nowPlaying = this.app.children[1].children[0].component
+        return this.app
     }
 }
 
@@ -281,6 +299,14 @@ class NowPlaying extends Component {
         super(p)
         this.listeners = 0
         this.title = "Niczego"
+        if(this.props.webTitle) {
+            this.webTitle = document.head.getElementsByTagName("title")[0]
+            if(!this.webTitle) {
+                this.webTitle = document.createElement("title")
+                document.head.append(this.webTitle)
+            }
+        }
+        else this.webTitle = false
     }
 
     fetchData() {
@@ -307,9 +333,6 @@ class NowPlaying extends Component {
             }
             else return data
             if(!data.title) return data
-            if (data.title.length > 35) {
-                data.title = `<marquee>${data.title}</marquee>`
-            }
             return data
         }) // this is here since first version of player, it's mess, but i'm too lazy to change it.
     }
@@ -323,14 +346,19 @@ class NowPlaying extends Component {
     }
 
     updateState() {
-        const titleNode = this.songTitleNode.main
-        if(titleNode.innerHTML !== this.title)
-            titleNode.innerHTML = this.title
+        if(this.songTitleNode.innerHTML !== this.title) {
+            if(this.title.length > 40)
+                this.songTitleNode.innerHTML = `<marquee>${this.title}</marquee>`
 
-        const listenersNode = this.listenersNode.main
+            else
+                this.songTitleNode.innerHTML = this.title
+            if(this.webTitle) 
+                this.webTitle.text = this.title + " @ CloudsdaleFM.net"
+        }
+
         let newListenres = this.getListeners()
-        if(listenersNode.innerHTML != newListenres) // i don't know when both will be string or number so == is perfect (finally i need to use that xD)
-            listenersNode.innerHTML = newListenres
+        if(this.listenersNode.innerHTML != newListenres) // i don't know when both will be string or number so == is perfect (finally i need to use that xD)
+            this.listenersNode.innerHTML = newListenres
     }
 
     getListeners() {
@@ -353,8 +381,8 @@ class NowPlaying extends Component {
             listenersWrapper
         )
         
-        this.listenersNode = listenersWrapper.children[1]
-        this.songTitleNode = wrapper.children[0]
+        this.listenersNode = listenersWrapper.children[1].main
+        this.songTitleNode = wrapper.children[0].main
 
         this.updateData()
         setInterval(() => {
@@ -368,7 +396,7 @@ class NowPlaying extends Component {
 class Slider extends Component {
     constructor(props) {
         super(props)
-        this.volume = props.defaultVolume
+        this.volume = this.props.defaultVolume
     }
 
     onScroll(evn) {
@@ -392,9 +420,8 @@ class Slider extends Component {
         if(vol < 0) vol = 0
         if(vol > 100) vol = 100 //rly.. i do that in audio player already >.-.<
         this.sliderInner.style.width = `${vol}%`
-        // color between hsl(150, 100%, 47%); and hsl(150, 100%, 47%);
         if(this.props.changeColor) {
-            const color = `hsl(${(110 - vol) + 50}, 100%, 47%)`
+            const color = `hsl(${(110 - vol) + 40}, 100%, 47%)`
             this.sliderInner.style.background = color
             this.sliderInner.style.boxShadow = `0px 0px 20px 1px ${color}` 
         }
@@ -428,7 +455,8 @@ const defaultOptions = {
     dataFetchFreq: 15,
     volume: 50,
     volumeStep: 5,
-    changeColor: true
+    changeColor: true,
+    webTitle: false
 }
 
 const instances = []
@@ -461,7 +489,7 @@ class Player {
     }
 
     prepareDOM() {
-        this.DOM.context = createElement(ContextMenu, { target: this.renderDom })
+        this.DOM.context = createElement(ContextMenu, { target: this.renderDom, active: this.options.contextMenu })
         this.DOM.window = createElement(App, { options: this.options })
 
         if(this.options.autoRender) {
@@ -487,9 +515,6 @@ window.addEventListener("DOMContentLoaded", () => {
     if(instances.length < 1) {
         console.warn("Player is added to page but not rendered! Trying to render with default settings...");
         const player = new Player("CloudsdalePlayer")
-        console.log(player)
-        window.p = player
-        window.stream = audioPlayer
     }
 })
 })()

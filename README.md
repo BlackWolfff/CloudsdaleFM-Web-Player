@@ -29,6 +29,8 @@ new CloudsdalePlayer("someID", { contextMenu: false })
     - default: `5`
 + `changeColor`: `Boolean` - If true slider will change color from blue-green to yellow depending on volume (from 0 - blue, to 100 - yellow)
     - default: `true`
++ `webTitle`: `Boolean` - When true player will change page title to `NowPlayingSong - CloudsdaleFM.net`
+    - default: `false`
 + `style`: `String` - URL path to your own stylesheet that will be attached to head, pass `false` to disable that.
     - default: `./style.css`
 + `contextMenu`: `Boolean` - Enable/Disable menu that appears when right clicked on player.
