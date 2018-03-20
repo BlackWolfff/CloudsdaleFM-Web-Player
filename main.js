@@ -4,10 +4,8 @@
  * https://github.com/BlackWolfff/CloudsdaleFM-Web-Player
  */
 
-(function() {
-
 const STATUS_URL = "https://server.cloudsdalefm.net/status-json.xsl";
-const STREAM_URL = "https://www.cloudsdalefm.net/stream";
+const STREAM_URL = "https://cloudsdalefm.net/stream";
 
 const _getMain = nodeType => {
     // I don't want to do .main everywhere and if is long to be sure it's not just component with all that props
@@ -136,7 +134,7 @@ class ContextMenu extends Component {
             },
             {
                 title: "Home page",
-                action: () => window.open("https://www.cloudsdalefm.net/", "_blank")
+                action: () => window.open("https://cloudsdalefm.net/", "_blank")
             }
         ]
     }
@@ -211,12 +209,12 @@ class ContextMenu extends Component {
 
         this.props.target.addEventListener("contextmenu", this.onContextmenu.bind(this))
         window.addEventListener("mousedown", evn => {
-            const keyCode = event.which || event.keyCode;
+            const keyCode = evn.which || evn.keyCode;
             if(evn.which != 3)
                 this.hide()
         })
-        window.addEventListener("keydown", (event) => {
-            const keyCode = event.which || event.keyCode;
+        window.addEventListener("keydown", (evn) => {
+            const keyCode = evn.which || evn.keyCode;
             if(keyCode == 27)
                 this.hide()
         
@@ -279,18 +277,24 @@ class PlayButton extends Component{
             this.setState("play")
         } else {
             this.setState("load")
-            audioPlayer.play().then(() => {
+            const p = audioPlayer.play()
+            if(p instanceof Promise) { // fuck edge
+                p.then(() => {
+                    audioPlayer.loading = false
+                    this.props.onClick(true)
+                    this.setState("pause")
+                })
+                .catch(err => {
+                    audioPlayer.error = true
+                    audioPlayer.loading = false
+                    if(audioPlayer.playing) // it is possible that stream start playing but promise will reject.
+                        audioPlayer.pause()
+                    this.setState("fail")
+                })
+            } else {
                 audioPlayer.loading = false
-                this.props.onClick(true)
                 this.setState("pause")
-            })
-            .catch(err => {
-                audioPlayer.error = true
-                audioPlayer.loading = false
-                if(audioPlayer.playing) // it is possible that stream start playing but promise will reject.
-                    audioPlayer.pause()
-                this.setState("fail")
-            })
+            }
         }
     }
 
@@ -311,14 +315,14 @@ class NowPlaying extends Component {
             this.webTitle = document.head.getElementsByTagName("title")[0]
             if(!this.webTitle) {
                 this.webTitle = document.createElement("title")
-                document.head.append(this.webTitle)
+                document.head.appendChild(this.webTitle)
             }
         }
         else this.webTitle = false
     }
 
     fetchData() {
-        return fetch(STATUS_URL)
+        return fetch(STATUS_URL, { cache: "no-store" })
         .then(res => {
             if (!res.ok) return false
             return res.text()
@@ -454,7 +458,7 @@ class Slider extends Component {
 
 const defaultOptions = {
     contextMenu: true,
-    style: "https://www.cloudsdalefm.net/player/style.css",
+    style: "https://cloudsdalefm.net/player/style.css",
     autoRender: true,
     background: true,
     dataFetchFreq: 15,
@@ -467,7 +471,7 @@ const defaultOptions = {
 const instances = []
 
 class Player {
-    constructor(domRenderNodeName, options) {
+    constructor(domRenderNodeName, options = {}) {
         if(instances.length > 0)
             throw new Error("CloudsdalePlayer already exists and is rendered!")
         
@@ -476,9 +480,13 @@ class Player {
         if(!this.renderDom) {
             throw new Error(`Node with tag or id ${domRenderNodeName} not found!`)
         }
-        this.options = {
-            ...defaultOptions,
-            ...options
+
+        this.options = {}
+        for(const option of Object.keys(defaultOptions)) { // FUCK IE
+            if(options.hasOwnProperty(option))
+                this.options[option] = options[option]
+            else 
+                this.options[option] = defaultOptions[option]
         }
         
         this.DOM = {}
@@ -497,10 +505,8 @@ class Player {
         this.DOM.context = createElement(ContextMenu, { target: this.renderDom, active: this.options.contextMenu })
         this.DOM.window = createElement(App, { options: this.options })
 
-        if(this.options.autoRender) {
+        if(this.options.autoRender)
             this.render(this.renderDom)
-            instances.push(this)
-        }
     }
 
     render(target = this.renderDom) {
@@ -511,7 +517,8 @@ class Player {
         if(this.options.contextMenu)
             document.body.prepend(this.DOM.context.main)
         
-        target.append(this.DOM.window.main)
+        target.appendChild(this.DOM.window.main)
+        instances.push(this)
     }
 }
 
@@ -522,4 +529,3 @@ window.addEventListener("DOMContentLoaded", () => {
         const player = new Player("CloudsdalePlayer")
     }
 })
-})()

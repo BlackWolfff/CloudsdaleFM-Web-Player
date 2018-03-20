@@ -1,4 +1,17 @@
-@import url('https://fonts.googleapis.com/css?family=Muli:300');
+@font-face {
+    font-family: 'Barlow';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Barlow Regular'), local('Barlow-Regular'), url("./fonts/barlow-latin.woff2") format('woff2');
+}
+
+@font-face {
+    font-family: 'Barlow';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Barlow Regular'), local('Barlow-Regular'), url("./fonts/barlow-latin-ext.woff2") format('woff2');
+}
+
 .CloudsdalePlayer {
     width: 400px;
     margin: 5px;
@@ -6,7 +19,7 @@
     height: 80px;
     display: inline-block;
     border-radius: 4px;
-    font-family: "Muli", sans-serif;
+    font-family: "Barlow", sans-serif;
 }
 
 .CloudsdalePlayer.withBg {
@@ -84,13 +97,13 @@
     width: 85%;
     background: #808080;
     overflow: hidden;
-    border-radius: 3px;
+    border-radius: 10px;
 }
 
 .CloudsdalePlayer .sliderInner {
     height: 100%;
     background: #00f076;
-    border-radius: 3px;
+    border-radius: 10px;
     pointer-events: none;
 }
 
